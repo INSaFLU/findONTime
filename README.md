@@ -41,7 +41,7 @@ _findONTime_ can interact with the INSaFLU-TELEVIR platfotm in two ways:
 
 If requested  the tool creates one INSaFLU-TELEVIR project for each inpp directory containing fastq files. The project name is the name of the directory. Files generated within the same directory are uploaded to the same project.
 
-If you have a local INSaFLU-TELEVIR installation (docker or server), findONTtimeThe tool  (--televir argument) can creates one INSaFLU-TELEVIR (virus detection) project including the samples under ONT sequencing. The project name is defined by the user (--tag argument) and the sample names are the names of the input directory (usually barcode01, barcode02, etc) with an extra user-defined tagas suffix. 
+If you have a local INSaFLU-TELEVIR installation (docker or server), and set the "--televir argument", findONTtimeThe tool can creates one INSaFLU-TELEVIR (virus detection) project including the samples under ONT sequencing. The project name is defined by the user (--tag argument) and the sample names are the ones of the input directory (usually barcode01, barcode02, etc) with an extra user-defined tag as suffix. 
 
 
 ### Input Files
@@ -75,7 +75,7 @@ optional arguments:
   -o OUT_DIR, --out_dir OUT_DIR
                         Output directory
   -s SLEEP, --sleep SLEEP
-                        Sleep time between checks in monitor mode
+                        Sleep time (in seconds) between checks in monitor mode
   -n TAG, --tag TAG     name tag, if given, will be added to the output file names
   --config CONFIG       config file
   --max_size MAX_SIZE   max size of the output file, in kilobytes
@@ -114,7 +114,7 @@ python -m pip install findontime
 ### USAGE
 
 ```bash
-findontime -i test_run/ -o test_new -d test_new --tag another -s 5 --merge –televir
+findontime -i input_directory -o output_directory --tag suffix -s 600 --merge –-televir
 
 ```
 
@@ -128,14 +128,14 @@ pytest --docker --config-file config.ini
 
 ```
 
-### OUTPUT
+### MAIN OUTPUT
 
 > **Note:** The output directory structure is maintained.
 
 - **fastq.gz** files containing all reads from the previous files.
 - **log.txt** file containing the concatenation process.
 - **metadata** individual metadata files for each fastq file uploaded.
-- **results.tsv** file containing the results of the pathogen detection. One file per project.
+- **results.tsv** file containing the main results of the TELEVIR pathogen detection. One file per project.
 
 ## Maintainers
 
