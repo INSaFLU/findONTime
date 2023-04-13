@@ -1,4 +1,5 @@
 
+from typing import Protocol
 import argparse
 import os
 import signal
@@ -7,14 +8,63 @@ import time
 from dataclasses import dataclass
 from typing import Tuple
 
+from fastq_handler.fastq_handler import PreMain
 from fastq_handler.actions import ProcessActionMergeWithLast, ProcessActionDownsize
+from fastq_handler.configs import RunConfig
 from findontime.configs import InfluConfig
 from findontime.connectors import ConnectorDocker, ConnectorParamiko
 from findontime.drones import (InsafluFileProcessThread, LockWithOwner,
                                TelevirFileProcessThread, signal_handler)
 from findontime.insaflu_uploads import (InfluConfig, InsafluFileProcess,
                                         TelevirFileProcess)
-from findontime.upload_utils import InsafluUploadRemote, UploadAll, UploadLast
+from findontime.upload_utils import InsafluUploadRemote, UploadAll, UploadLast, UploadNone
+
+
+def get_arguments():
+
+    parser = argparse.ArgumentParser(description="Process fastq files.")
+    parser.add_argument(
+        "-i", "--in_dir", help="Input directory", required=True)
+    parser.add_argument("-o", "--out_dir",
+                        help="Output directory", required=True)
+    parser.add_argument("-s", "--sleep", help="Sleep time between checks in monitor mode", default=600,
+                        type=int)
+
+    parser.add_argument("-n", "--tag", help="name tag, if given, will be added to the output file names",
+                        required=False, type=str, default="")
+
+    parser.add_argument("--config", help="config file",
+                        required=False, type=str, default="config.ini")
+
+    parser.add_argument(
+        "--max_size", help="max size of the output file, in kilobytes", type=int, default=400000)
+
+    parser.add_argument("--merge", help="merge files", action="store_true")
+
+    parser.add_argument(
+        "--downsize", help="downsize fastq files", action="store_true")
+
+    parser.add_argument('--upload',
+                        default='last',
+                        choices=['last', 'all', 'none'],
+                        help='file upload stategy (default: last)',)
+
+    parser.add_argument('--connect',
+                        default='docker',
+                        choices=['docker', 'ssh'],
+                        help='file upload stategy (default: docker)',)
+
+    parser.add_argument(
+        "--keep_names", help="keep original file names", action="store_true")
+
+    parser.add_argument(
+        "--monitor", help="monitor directory until killed", action="store_true")
+
+    parser.add_argument(
+        "--televir", help="deploy televir pathogen identification on each sample", action="store_true"
+    )
+
+    return ArgsClass(**parser.parse_args().__dict__)
 
 
 @dataclass
@@ -46,51 +96,84 @@ class MainInsaflu:
     def __init__(self):
         pass
 
-    def get_arguments(self):
+    def select_manager(self, args: ArgsClass):
 
-        parser = argparse.ArgumentParser(description="Process fastq files.")
-        parser.add_argument(
-            "-i", "--in_dir", help="Input directory", required=True)
-        parser.add_argument("-o", "--out_dir",
-                            help="Output directory", required=True)
-        parser.add_argument("-s", "--sleep", help="Sleep time between checks in monitor mode", default=600,
-                            type=int)
+        if args.upload == 'none':
+            print("No upload specified, using fastq handler")
+            return FastqHandlerManager(args)
+        else:
+            return InsafluManager(args)
 
-        parser.add_argument("-n", "--tag", help="name tag, if given, will be added to the output file names",
-                            required=False, type=str, default="")
+    def run(self):
+        args = get_arguments()
+        manager = self.select_manager(args)
+        manager.run()
 
-        parser.add_argument("--config", help="config file",
-                            required=False, type=str, default="config.ini")
 
-        parser.add_argument(
-            "--max_size", help="max size of the output file, in kilobytes", type=int, default=400000)
+class Deployer(Protocol):
 
-        parser.add_argument("--merge", help="merge files", action="store_true")
+    def __init__(self, args: ArgsClass) -> None:
+        ...
 
-        parser.add_argument(
-            "--downsize", help="downsize fastq files", action="store_true")
+    def run(self) -> None:
+        ...
 
-        parser.add_argument('--upload',
-                            default='last',
-                            choices=['last', 'all'],
-                            help='file upload stategy (default: all)',)
 
-        parser.add_argument('--connect',
-                            default='docker',
-                            choices=['docker', 'ssh'],
-                            help='file upload stategy (default: docker)',)
+class FastqHandlerManager:
 
-        parser.add_argument(
-            "--keep_names", help="keep original file names", action="store_true")
+    def __init__(self, args: ArgsClass):
+        self.args = args
 
-        parser.add_argument(
-            "--monitor", help="monitor directory until killed", action="store_true")
+    def setup_config(self, args: ArgsClass):
 
-        parser.add_argument(
-            "--televir", help="deploy televir pathogen identification on each sample", action="store_true"
+        actions = []
+
+        if args.merge:
+            actions.append(ProcessActionMergeWithLast())
+
+        if args.downsize:
+            actions.append(ProcessActionDownsize(args.max_size))
+
+        if not actions:
+            print("No actions specified, will merge files by default")
+            actions.append(ProcessActionMergeWithLast())
+
+        run_metadata = RunConfig(
+            fastq_dir=args.in_dir,
+            output_dir=args.out_dir,
+            name_tag=args.tag,
+            actions=actions,
+            keep_name=args.keep_names,
+            sleep_time=args.sleep,
+            max_size=(args.max_size),
         )
+        actions = []
 
-        return ArgsClass(**parser.parse_args().__dict__)
+        return run_metadata
+
+    def setup_compressor(self, run_metadata: RunConfig):
+
+        compressor = PreMain(run_metadata)
+
+        return compressor
+
+    def run(self):
+
+        compressor = self.setup_compressor(self.setup_config(self.args))
+
+        if self.args.monitor:
+
+            compressor.run_until_killed()
+
+        else:
+
+            compressor.run()
+
+
+class InsafluManager:
+
+    def __init__(self, args: ArgsClass):
+        self.args = args
 
     def setup_config(self, args: ArgsClass, test=False):
 
@@ -118,13 +201,15 @@ class MainInsaflu:
         # determine upload strategy
         if args.upload == 'last':
             upload_strategy = UploadLast
+        elif args.upload == 'none':
+            upload_strategy = UploadNone
         else:
             upload_strategy = UploadAll
 
         # determine actions
         actions = []
         if args.merge:
-            actions.append(ProcessActionMergeWithLast)
+            actions.append(ProcessActionMergeWithLast())
 
         if args.downsize:
             actions.append(ProcessActionDownsize(args.max_size))
@@ -196,7 +281,7 @@ class MainInsaflu:
 
     def run(self):
 
-        args = self.get_arguments()
+        args = self.args
 
         run_metadata = self.setup_config(args)
 

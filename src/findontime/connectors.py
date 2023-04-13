@@ -42,6 +42,33 @@ class Connector(ABC):
         pass
 
 
+class ConnectorNull(Connector):
+
+    def __init__(self):
+        super().__init__()
+
+    def test_connection(self) -> None:
+        pass
+
+    def execute_command(self, command: str) -> str:
+        return ""
+
+    def check_file_exists(self, file_path: str) -> bool:
+        return False
+
+    def upload_file(self, file_path: str, remote_path: str):
+        pass
+
+    def download_file(self, file_path: str, remote_path: str):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+
 class ConnectorParamiko(Connector):
 
     def __init__(self, config_file: str) -> None:

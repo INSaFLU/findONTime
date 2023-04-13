@@ -79,8 +79,6 @@ optional arguments:
 
 ### REQUIREMENTS
 
-** Modules **
-
 - **python 3.6** or higher
 - dataclasses==0.6
 - natsort==8.3.1
