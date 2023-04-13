@@ -12,7 +12,7 @@ Reducing the time needed for pathogen detection and the sequencing costs per sam
 
 ## Introduction
 
-The findONTime tool uploads fastq files to the INSaFLU-TELEVIR platform (docker installation or local server), and launches themetagenomics pathogen detection analysis using the [TELEVIR](https://insaflu.readthedocs.io/en/latest/metagenomics_virus_detection.html) module. The tool relies on \_fastq-handler\*, a package to monitor and process outputs of ONT runs, upload the reads, launch TELEVIR projects and generates a report with the results.
+The findONTime tool uploads fastq files to the INSaFLU-TELEVIR platform (docker installation or local server), and launches themetagenomics pathogen detection analysis using the [TELEVIR](https://insaflu.readthedocs.io/en/latest/metagenomics_virus_detection.html) module. The tool relies on [fastq-handler](https://pypi.org/project/fastq-handler/), a package to monitor and process outputs of ONT runs, upload the reads, launch TELEVIR projects and generates a report with the results.
 
 ## Details
 
