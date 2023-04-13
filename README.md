@@ -125,12 +125,14 @@ findontime -i input_directory -o output_directory --tag suffix -s 600 --upload l
 ```bash
 findontime -i input_directory -o output_directory --tag suffix -s 600 --upload last --merge 
 
+```
 
 - Example 3. Merge fastq files generated during ONT run at every 10 min (600 seconds) and prepare the respective metadata table
 
 ```bash
 findontime -i input_directory -o output_directory --tag suffix -s 600 --merge 
 
+```
 
 
 ### TESTING
