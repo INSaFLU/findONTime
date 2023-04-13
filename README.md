@@ -71,12 +71,12 @@ optional arguments:
   -o OUT_DIR, --out_dir OUT_DIR
                         Output directory
   -s SLEEP, --sleep SLEEP
-                        Sleep time between checks in monitor mode
+                        Sleep time between checks in monitor mode (default 600 seconds)
   -n TAG, --tag TAG     name tag, if given, will be added to the output file names
   --config CONFIG       config file
-  --max_size MAX_SIZE   max size of the output file, in kilobytes
+  --max_size MAX_SIZE   max size of the output file, in kilobytes (default = 400000 kbytes)
   --merge               merge files
-  --downsize            downsize fastq files
+  --downsize            downsize fastq files to max_size
   --upload {last,all,none}
                         file upload stategy (default: last)
   --connect {docker,ssh}
