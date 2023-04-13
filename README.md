@@ -2,7 +2,6 @@
 
 [![PyPI version](https://badge.fury.io/py/findontime.svg)](https://badge.fury.io/py/findontime)
 [![PyPI version](https://img.shields.io/pypi/pyversions/findontime.svg)](https://pypi.python.org/pypi/findontime/)
-[![PyPI version](https://img.shields.io/pypi/status/findontime.svg)](https://pypi.python.org/pypi/findontime/)
 [![PyPI version](https://img.shields.io/pypi/format/findontime.svg)](https://pypi.python.org/pypi/findontime/)
 
 **A tool to upload fastq files (fastq or fastq.gz format) to the INSaFLU-TELEVIR platform and launch the metagenomics pathogen detection analysis using the TELEVIR module**
