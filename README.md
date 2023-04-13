@@ -81,7 +81,7 @@ optional arguments:
   --max_size MAX_SIZE   max size of the output file, in kilobytes
   --merge               merge files
   --downsize            downsize fastq files
-  --upload {last,all}   file upload stategy (default: all)
+  --upload {last,all}   file upload stategy (default: last)
   --connect {docker,ssh}
                         file upload stategy (default: docker)
   --keep_names          keep original file names
@@ -113,10 +113,25 @@ python -m pip install findontime
 
 ### USAGE
 
+- Example 1. Merge fastq files generated during ONT run at every 10 min (600 seconds), upload them to INSaFLU-TELEVIR and run a virus detection project 
+
 ```bash
-findontime -i input_directory -o output_directory --tag suffix -s 600 --merge –-televir
+findontime -i input_directory -o output_directory --tag suffix -s 600 --upload last --merge –-televir
 
 ```
+
+- Example 2. Merge fastq files generated during ONT run at every 10 min (600 seconds) and upload them to INSaFLU-TELEVIR
+
+```bash
+findontime -i input_directory -o output_directory --tag suffix -s 600 --upload last --merge 
+
+
+- Example 3. Merge fastq files generated during ONT run at every 10 min (600 seconds) and prepare the respective metadata table
+
+```bash
+findontime -i input_directory -o output_directory --tag suffix -s 600 --merge 
+
+
 
 ### TESTING
 
