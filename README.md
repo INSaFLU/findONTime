@@ -78,9 +78,9 @@ optional arguments:
   --merge               merge files
   --downsize            downsize fastq files to max_size
   --upload {last,all,none}
-                        file upload stategy (default: last)
+                        file upload strategy (default: last)
   --connect {docker,ssh}
-                        file upload stategy (default: docker)
+                        file upload strategy (default: docker)
   --keep_names          keep original file names
   --monitor             monitor directory until killed
   --televir             deploy televir pathogen identification on each sample
