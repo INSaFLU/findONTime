@@ -111,23 +111,31 @@ python -m pip install findontime
 - Example 1. Merge fastq files generated during a ONT run at every 10 min (600 seconds), upload them to INSaFLU-TELEVIR and run a virus detection project
 
 ```bash
-findontime -i input_directory -o output_directory --tag suffix -s 600 --merge --upload last –-televir
+findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --merge --upload last –-televir
 
 ```
 
 - Example 2. Merge fastq files generated during a ONT run at every 10 min (600 seconds) and upload them to INSaFLU-TELEVIR
 
 ```bash
-findontime -i input_directory -o output_directory --tag suffix -s 600 --merge --upload last 
+findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --merge --upload last 
 
 ```
 
 - Example 3. Merge fastq files generated during a ONT run at every 10 min (600 seconds) and prepare the respective metadata table
 
 ```bash
-findontime -i input_directory -o output_directory --tag suffix -s 600 --merge --upload none
+findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 100000000 --merge --upload none
 
 ```
+
+- Example 4. Merge fastq files generated during a ONT run at every 10 min (600 seconds), downsize the merged file to 400 MB, and prepare the respective metadata table.
+
+```bash
+findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --merge --upload none --downsize
+
+```
+
 
 ### TESTING
 
