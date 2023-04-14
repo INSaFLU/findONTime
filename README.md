@@ -4,7 +4,7 @@
 [![PyPI version](https://img.shields.io/pypi/pyversions/findontime.svg)](https://pypi.python.org/pypi/findontime/)
 [![PyPI version](https://img.shields.io/pypi/format/findontime.svg)](https://pypi.python.org/pypi/findontime/)
 
-The **findONTime** tool **runs concurrently with MinION sequencing** and **merges (at user defined time intervals) the FASTQ files** that are being generated in real-time for each sample. It can also automatically **upload the files the INSaFLU-TELEVIR platform** and launch the **metagenomics virus detection** analysis using the TELEVIR module.
+The **findONTime** tool **runs concurrently with MinION sequencing** and **merges (at user defined time intervals) the FASTQ files** that are being generated in real-time for each sample. It can also automatically **upload the files the INSaFLU-TELEVIR platform** (https://insaflu.insa.pt/) and launch the **metagenomics virus detection** analysis using the TELEVIR module.
 
 ## Motivation
 
