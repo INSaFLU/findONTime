@@ -108,33 +108,51 @@ python -m pip install findontime
 
 ### USAGE
 
-- Example 1. Merge fastq files generated during a ONT run at every 10 min (600 seconds), upload them to INSaFLU-TELEVIR and run a virus detection project
+*(from simple to more advanced usage situations)*
+
+- Example 1. **Merge fastq files from an ONT run  and prepare the respective metadata table.**
 
 ```bash
-findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --merge --upload last –-televir
+findontime -i input_directory -o output_directory --tag suffix --max_size 100000000 --merge --upload none
 
 ```
+*NOTE: In this simpler usage case, the fastq.gz files will only be only merged, i.e., they will not be automatically uploaded to the INSaFLU-TELEVIR platform. In case you want to concatenate all ONT same-sample files (file_0.fastq.gz, file_1.fastq.gz, etc), make sure you set up a "max_size" (e.g., 100000000 kbytes) enough to ensure that the merged file compiles all partial files.* 
 
-- Example 2. Merge fastq files generated during a ONT run at every 10 min (600 seconds) and upload them to INSaFLU-TELEVIR
+
+- Example 2. **Merge fastq files generated during a ONT run at every 10 min (600 seconds) and prepare the respective metadata table.**
 
 ```bash
-findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --merge --upload last 
+findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 100000000 --monitor --merge --upload none
 
 ```
+*NOTE: In this simpler usage case, the fastq.gz files will only be only merged, i.e., they will not be automatically uploaded to the INSaFLU-TELEVIR platform. In case you want to concatenate all ONT same-sample files (file_0.fastq.gz, file_1.fastq.gz, etc), make sure you set up a "max_size" (e.g., 100000000 kbytes) enough to ensure that the merged file compiles all partial files.* 
 
-- Example 3. Merge fastq files generated during a ONT run at every 10 min (600 seconds) and prepare the respective metadata table
+
+- Example 3. **Merge fastq files generated during a ONT run at every 10 min (600 seconds), downsize the merged file to 400 MB, and prepare the respective metadata table (ready to be uploaded to INSaFLU-TELEVIR).**
 
 ```bash
-findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 100000000 --merge --upload none
+findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --monitor --merge --upload none --downsize
 
 ```
+*NOTE: In this case, the fastq.gz files will only be concatenated (i.e., they will not be automatically uploaded to the INSaFLU-TELEVIR platform), but the merged files will be downsized to the user-defined "max_sixe" (e.g., 400000 kbytes). This usage is useful to prepare files ready to be uploaded to the online INSaFLU-TELEVIR platform (https://insaflu.insa.pt/), which is currently limited to an upload max size per file of 400 MB.*
 
-- Example 4. Merge fastq files generated during a ONT run at every 10 min (600 seconds), downsize the merged file to 400 MB, and prepare the respective metadata table.
+
+- Example 4. **Merge fastq files generated during a ONT run at every 10 min (600 seconds) and upload them to INSaFLU-TELEVIR**
 
 ```bash
-findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --merge --upload none --downsize
+findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --monitor --connect docker --merge --upload last --connect docker
 
 ```
+*NOTE: In this case, the fastq.gz files will be concatenated and automatically uploaded to the INSaFLU-TELEVIR platform. The merged files will be downsized to the user-defined "max_sixe" (e.g., 400000 kbytes), which must be fitted to the maximum upload file size defined in your local INSaFLU_TELEVIR installation*
+
+
+- Example 5. **Merge fastq files generated during a ONT run at every 10 min (600 seconds), upload them to INSaFLU-TELEVIR and run a virus detection project**
+
+```bash
+findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --monitor --connect docker --merge --upload last –-televir 
+
+```
+*NOTE: In this case, the fastq.gz files will be concatenated, automatically uploaded to the INSaFLU-TELEVIR platform and run under a virus detection (TELEVIR) project. The merged files will be downsized to the user-defined "max_sixe" (e.g., 400000 kbytes), which must be fitted to the maximum upload file size defined in your local INSaFLU_TELEVIR installation*
 
 
 ### TESTING
