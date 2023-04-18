@@ -33,7 +33,7 @@ visualize = ["graphviz (>0.5.1)", "Twisted (>=16.1.1)"]
 name = "bcrypt"
 version = "4.0.1"
 description = "Modern password hashing for your software and your servers"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -45,7 +45,7 @@ typecheck = ["mypy"]
 name = "cffi"
 version = "1.15.1"
 description = "Foreign Function Interface for Python calling C code."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -115,7 +115,7 @@ toml = ["tomli"]
 name = "cryptography"
 version = "40.0.1"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -496,7 +496,7 @@ test = ["hypothesis (>=5.5.3)", "pytest (>=6.0)", "pytest-xdist (>=1.31)"]
 name = "paramiko"
 version = "3.1.0"
 description = "SSH2 protocol library"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -550,7 +550,7 @@ testing = ["pytest", "pytest-benchmark"]
 name = "pycparser"
 version = "2.21"
 description = "C parser in Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
@@ -558,7 +558,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 name = "pynacl"
 version = "1.5.0"
 description = "Python binding to the Networking and Cryptography (NaCl) library"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -816,7 +816,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "88b881a2897dda39360680ecf3efbdd2f8278360e491e4643f4fd105735bb759"
+content-hash = "3199836dfb40e3886063bf545d0b8e34b7596745206d91bb12290f04c59d89a0"
 
 [metadata.files]
 attrs = []
