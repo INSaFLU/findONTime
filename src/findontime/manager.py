@@ -1,23 +1,24 @@
 
-from typing import Protocol
 import argparse
 import os
 import signal
 import sys
 import time
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Protocol, Tuple
 
-from fastq_handler.fastq_handler import PreMain
-from fastq_handler.actions import ProcessActionMergeWithLast, ProcessActionDownsize
-from fastq_handler.configs import RunConfig
-from findontime.configs import InfluConfig
+from fastq_handler.actions import (ProcessActionDownsize,
+                                   ProcessActionMergeWithLast)
+
+from findontime.configs import InfluConfig, RunConfigMeta
 from findontime.connectors import ConnectorDocker, ConnectorParamiko
 from findontime.drones import (InsafluFileProcessThread, LockWithOwner,
                                TelevirFileProcessThread, signal_handler)
 from findontime.insaflu_uploads import (InfluConfig, InsafluFileProcess,
+                                        PreMainWithMetadata,
                                         TelevirFileProcess)
-from findontime.upload_utils import InsafluUploadRemote, UploadAll, UploadLast, UploadNone
+from findontime.upload_utils import (InsafluUploadRemote, UploadAll,
+                                     UploadLast, UploadNone)
 
 
 def get_arguments():
@@ -138,7 +139,7 @@ class FastqHandlerManager:
             print("No actions specified, will merge files by default")
             actions.append(ProcessActionMergeWithLast())
 
-        run_metadata = RunConfig(
+        run_metadata = RunConfigMeta(
             fastq_dir=args.in_dir,
             output_dir=args.out_dir,
             name_tag=args.tag,
@@ -151,9 +152,9 @@ class FastqHandlerManager:
 
         return run_metadata
 
-    def setup_compressor(self, run_metadata: RunConfig):
+    def setup_compressor(self, run_metadata: RunConfigMeta):
 
-        compressor = PreMain(run_metadata)
+        compressor = PreMainWithMetadata(run_metadata)
 
         return compressor
 

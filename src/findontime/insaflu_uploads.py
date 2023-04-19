@@ -6,9 +6,9 @@ import sys
 from typing import List
 
 import pandas as pd
-
 from fastq_handler.fastq_handler import DirectoryProcessingSimple, PreMain
 from fastq_handler.records import Processed
+
 from findontime.configs import InfluConfig, default_log_handler
 from findontime.plot_utils import plot_project_results
 from findontime.records import InsafluFile, MetadataEntry
@@ -165,9 +165,11 @@ class InfluDirectoryProcessing(DirectoryProcessingSimple):
         prepare processed files for upload
         """
 
-        files_to_upload = self.processed.processed.fastq.tolist()
+        files_to_upload = self.processed.processed_fastq_list()
 
-        for ix, row in self.processed.processed.iterrows():
+        processed_df = self.processed.processed_entries
+
+        for ix, row in processed_df.iterrows():
 
             fastq_file = row.fastq
             merged_file = row.merged
@@ -213,26 +215,23 @@ class InsafluSetup:
         )
 
 
-class InsafluFileProcess(PreMain, InsafluSetup):
+class PreMainWithMetadata(PreMain):
     """
-    InsafluUpload class
     """
-
-    processed: InfluProcessed
-    run_metadata: InfluConfig
-    projects_results: list = []
     metadata_dirname = "metadata_dir"
 
-    def __init__(self, run_metadata: InfluConfig):
-        PreMain.__init__(self, run_metadata)
-        InsafluSetup.__init__(self, run_metadata)
+    processed: InfluProcessed
 
+    def __init__(self, run_metadata: InfluConfig):
+        super().__init__(run_metadata)
         self.logger = logging.getLogger(__name__)
         self.logger.addHandler(default_log_handler)
 
         self.prep_metadata_dir()
-
-        self.test = False
+        self.run_metadata = run_metadata
+        self.processed = InfluProcessed(
+            self.run_metadata.logs_dir,
+        )
 
     def prep_metadata_dir(self):
         """
@@ -240,19 +239,6 @@ class InsafluFileProcess(PreMain, InsafluSetup):
         """
 
         os.makedirs(self.run_metadata.metadata_dir, exist_ok=True)
-
-    def update_projects(self, project_file: str):
-        """
-        update project added
-        """
-        if project_file not in self.projects_results:
-            if os.path.exists(project_file):
-                self.projects_results.append(project_file)
-
-    def get_directory_processing(self, fastq_dir: str):
-
-        return InfluDirectoryProcessing(fastq_dir, self.run_metadata, self.processed,
-                                        self.start_time, test=self.test)
 
     def write_metadata(self, metadata: List[MetadataEntry], metadata_filename: str):
         """
@@ -285,15 +271,6 @@ class InsafluFileProcess(PreMain, InsafluSetup):
         ]
         return metadata_list
 
-    def get_samples_to_submit(self) -> List[InsafluFile]:
-        """
-        get samples to submit
-        """
-        samples_to_submit = self.uploader.logger.generate_fastq_list_status(
-            InsafluSampleCodes.STATUS_UPLOADED)
-
-        return samples_to_submit
-
     def generate_metatadata_filename(self):
         """
         generate metadata filename
@@ -304,7 +281,32 @@ class InsafluFileProcess(PreMain, InsafluSetup):
         metadata_filename = f"{self.run_metadata.name_tag}_{formatted_time}_metadata.tsv"
         return metadata_filename
 
-    def submit(self):
+    def get_samples_to_submit(self):
+        """
+        get samples to submit
+        """
+        files_to_upload = self.processed.processed_fastq_list()
+
+        insaflu_file_list = []
+        for fastq1 in files_to_upload:
+
+            _, barcode = self.processed.get_run_barcode(fastq1, self.fastq_dir)
+            sample_id = self.processed.get_sample_id_from_merged(
+                fastq1
+            )
+
+            insaflu_file_list.append(
+                InsafluFile(
+                    sample_id=sample_id,
+                    barcode=barcode,
+                    file_path=os.path.join(self.fastq_dir, fastq1),
+                    remote_path=os.path.join(self.fastq_dir, fastq1),
+                    status=0)
+            )
+
+        return insaflu_file_list
+
+    def metadata_prepare(self):
         """
         submit sample to remote server"""
 
@@ -312,11 +314,70 @@ class InsafluFileProcess(PreMain, InsafluSetup):
         sample_metadata = self.metadata_from_files(samples_to_submit)
 
         if len(sample_metadata) == 0:
-            return
+            return ""
 
         self.logger.info(f"Submitting {len(sample_metadata)} sample(s)")
 
-        self.submit_samples(sample_metadata)
+        insaflu_metadata_file = self.generate_metatadata_filename()
+        metadata_filepath = os.path.join(
+            self.run_metadata.metadata_dir,
+            insaflu_metadata_file
+        )
+
+        self.write_metadata(
+            sample_metadata,
+            metadata_filepath
+        )
+
+        return metadata_filepath
+
+    def run(self):
+        """
+        run main
+        """
+        super().run()
+        metadata_filepath = self.metadata_prepare()
+
+        return metadata_filepath
+
+
+class InsafluFileProcess(PreMainWithMetadata, InsafluSetup):
+    """
+    InsafluUpload class
+    """
+
+    processed: InfluProcessed
+    run_metadata: InfluConfig
+    projects_results: list = []
+    metadata_dirname = "metadata_dir"
+
+    def __init__(self, run_metadata: InfluConfig):
+        PreMainWithMetadata.__init__(self, run_metadata)
+        InsafluSetup.__init__(self, run_metadata)
+
+        self.test = False
+
+    def update_projects(self, project_file: str):
+        """
+        update project added
+        """
+        if project_file not in self.projects_results:
+            if os.path.exists(project_file):
+                self.projects_results.append(project_file)
+
+    def get_directory_processing(self, fastq_dir: str):
+
+        return InfluDirectoryProcessing(fastq_dir, self.run_metadata, self.processed,
+                                        self.start_time, test=self.test)
+
+    def get_samples_to_submit(self) -> List[InsafluFile]:
+        """
+        get samples to submit
+        """
+        samples_to_submit = self.uploader.logger.generate_fastq_list_status(
+            InsafluSampleCodes.STATUS_UPLOADED)
+
+        return samples_to_submit
 
     def clean_remote(self):
         """
@@ -328,20 +389,15 @@ class InsafluFileProcess(PreMain, InsafluSetup):
         for file in samples_to_clean:
             self.uploader.clean_upload(file.remote_path)
 
-    def submit_samples(self, sample_metadata: List[MetadataEntry]):
+    def submit_samples(self, metadata_filepath: str):
         """
         submit samples
         """
-        insaflu_metadata_file = self.generate_metatadata_filename()
-        metadata_filepath = os.path.join(
-            self.run_metadata.metadata_dir,
-            insaflu_metadata_file
-        )
 
-        self.write_metadata(
-            sample_metadata,
-            metadata_filepath
-        )
+        if not os.path.exists(metadata_filepath):
+            return
+
+        insaflu_metadata_file = os.path.basename(metadata_filepath)
 
         self.uploader.upload_file(
             metadata_filepath,
@@ -389,8 +445,9 @@ class InsafluFileProcess(PreMain, InsafluSetup):
                 file_name, fastq.file_path, test=self.test)
 
     def run(self):
-        super().run()
-        self.submit()
+        PreMainWithMetadata.run(self)
+        metadata_filepath = self.metadata_prepare()
+        self.submit_samples(metadata_filepath)
         self.clean_remote()
         self.monitor_samples_status()
         self.export_global_metadata()
@@ -519,7 +576,7 @@ class TelevirFileProcess(InsafluSetup):
 
             self.logger.info("Plotting results")
             _ = plot_project_results(
-                self.projects_results, self.processed.processed, self.output_dir)
+                self.projects_results, self.processed.processed_entries, self.output_dir)
 
     def run_return_plot(self):
 
@@ -529,6 +586,6 @@ class TelevirFileProcess(InsafluSetup):
 
             self.download_project_results()
             return plot_project_results(
-                self.projects_results, self.processed.processed, self.run_metadata.output_dir, write_html=False)
+                self.projects_results,  self.processed.processed_entries, self.run_metadata.output_dir, write_html=False)
 
         return None

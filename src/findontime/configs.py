@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Optional, Type
 
 from fastq_handler.configs import InputState, OutputDirs, RunParams
+
 from findontime.tables_post import InsafluTables
 from findontime.upload_utils import InsafluUpload, UploadStrategy
 
@@ -40,6 +41,25 @@ class InfluOutput(OutputDirs):
     metadata_dirname: str = "metadata_dir"
     logs_dirname: str = "logs"
     db_path: str = "insaflu.db"
+
+
+@dataclass
+class RunConfigMeta(InputState, RunParams, InfluOutput):
+    """
+    class to hold run config"""
+
+    def __post_init__(self):
+        """
+        post init
+        """
+        if self.actions is None:
+            self.actions = []
+
+        self.logs_dir = os.path.join(self.output_dir, self.logs_dirname)
+        self.output_dir = os.path.abspath(self.output_dir)
+
+        self.metadata_dir = os.path.join(
+            self.output_dir, self.metadata_dirname)
 
 
 @dataclass
