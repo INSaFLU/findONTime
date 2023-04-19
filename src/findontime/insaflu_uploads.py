@@ -264,7 +264,7 @@ class PreMainWithMetadata(PreMain):
         metadata_list = [
             self.processed.generate_metadata_entry(
                 x.file_path,
-                self.fastq_dir,
+                os.path.dirname(x.file_path),
                 x.remote_path,
                 tag=self.run_metadata.name_tag
             ) for x in files_list
@@ -285,22 +285,24 @@ class PreMainWithMetadata(PreMain):
         """
         get samples to submit
         """
-        files_to_upload = self.processed.processed_fastq_list()
+        files_to_upload = self.processed.processed.fastq.tolist()
+        merged_files = self.processed.processed.merged.tolist()
+        dirs = self.processed.processed.dir.tolist()
 
         insaflu_file_list = []
-        for fastq1 in files_to_upload:
+        for i, fastq1 in enumerate(files_to_upload):
 
             _, barcode = self.processed.get_run_barcode(fastq1, self.fastq_dir)
             sample_id = self.processed.get_sample_id_from_merged(
-                fastq1
+                merged_files[i]
             )
 
             insaflu_file_list.append(
                 InsafluFile(
                     sample_id=sample_id,
                     barcode=barcode,
-                    file_path=os.path.join(self.fastq_dir, fastq1),
-                    remote_path=os.path.join(self.fastq_dir, fastq1),
+                    file_path=os.path.join(dirs[i], fastq1),
+                    remote_path=merged_files[i],
                     status=0)
             )
 
