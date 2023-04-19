@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "findontime"
-version = "0.2.0"
+version = "0.2.5"
 description = "A tool to upload Fastq files to the INSaFLU database and perform metagenomics pathogen detection"
 authors = ["SantosJGND <dourado.jns@gmail.com>", "insapathogenomics <insapathogenomics@insa.min-saude.pt>"]
 readme = "README.md"
