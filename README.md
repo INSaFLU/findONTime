@@ -28,7 +28,7 @@ This allows users to **detect a virus in a sample as early as possible during th
 
 _findONTime_ can interact with the INSaFLU-TELEVIR platfotm in two ways:
 
-- **Docker**. The user needs to have the INSaFLU-TELEVIR docker installed and running. The tool will then upload the files to the docker image. The user needs to provide the name of the docker image and the path for uploads.
+- **Docker**. The user needs to have the INSaFLU-TELEVIR docker installed and running (https://github.com/INSaFLU/docker#installation). The tool will then upload the files to the docker image. The user needs to provide the name of the docker image and the path for uploads.
 
 - **SSH**. The user needs to have access to an INSaFLU-TELEVIR database server. The tool will then upload the files to the database using SSH. The user needs to provide the path for uploads and the credentials for the database server.
 
@@ -126,7 +126,7 @@ findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size
 
 _NOTE: In this simpler usage case, the fastq.gz files will only be only merged, i.e., they will not be automatically uploaded to the INSaFLU-TELEVIR platform. In case you want to concatenate all ONT same-sample files (file_0.fastq.gz, file_1.fastq.gz, etc), make sure you set up a "max_size" (e.g., 100000000 kbytes) enough to ensure that the merged file compiles all partial files. findONTime will also prepare a metadata table ready to be uploaded to INSaFLU-TELEVIR. _
 
-- Example 3. **Merge fastq files generated during a ONT run at every 10 min (600 seconds), downsize the merged file to 400 MB and prepare metadata table (ready to be uploaded to online INSaFLU-TELEVIR). **
+- Example 3. **Merge fastq files generated during a ONT run at every 10 min (600 seconds), downsize the merged file to 400 MB and prepare metadata table (ready to be uploaded to online INSaFLU-TELEVIR).**
 
 ```bash
 findontime -i input_directory -o output_directory --tag suffix -s 600 --max_size 400000 --monitor --merge --upload none --downsize
