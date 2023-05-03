@@ -181,7 +181,7 @@ pytest --docker --config-file config.ini
 
 If you run *findONTime*, please cite this Github page:
 
-João D. Santos, André Santos, Joana Isidro, Miguel Pinto, João P. Gomes, Daniel Sobral, Vítor Borges (2023). **findONTime: A bioinformatics tool for real-time metagenomics virus detection analysis using ONT technology and INSaFLU-TELEVIR platform.** https://github.com/INSaFLU/findONTime
+João D. Santos, André Santos, Joana Isidro, Miguel Pinto, João P. Gomes, Daniel Sobral, Vítor Borges (2023). **findONTime: A bioinformatics tool for real-time metagenomics virus detection analysis using ONT technology and the INSaFLU-TELEVIR platform.** https://github.com/INSaFLU/findONTime
 
 
 
