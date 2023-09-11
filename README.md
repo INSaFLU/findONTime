@@ -177,6 +177,11 @@ pytest --docker --config-file config.ini
 - [**@santosjgnd**](https://github.com/SantosJGND)
 - [**@insaflu**](https://github.com/insapathogenomics)
 
+## Funding
+
+The development of findONTime tool was co-funded by the project “Sustainable use and integration of enhanced infrastructure into routine genome-based surveillance and outbreak investigation activities in Portugal” on behalf of EU4H programme (EU4H-2022-DGA-MS-IBA-1). It was also financed by the DURABLE project. The DURABLE project has been co-funded by the European Union, under the EU4Health Programme (EU4H), Project no. 101102733. Views and opinions expressed are however those of the authors only and do not necessarily reflect those of the European Union or the European Health and Digital Executive Agency. Neither the European Union nor the granting authority can be held responsible for them.
+
+
 ## CITATION
 
 If you run *findONTime*, please cite this Github page:
