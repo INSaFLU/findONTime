@@ -14,7 +14,7 @@ from findontime.configs import InfluConfig, RunConfigMeta
 from findontime.connectors import ConnectorDocker, ConnectorParamiko
 from findontime.drones import (InsafluFileProcessThread, LockWithOwner,
                                TelevirFileProcessThread, signal_handler)
-from findontime.insaflu_uploads import (InfluConfig, InsafluFileProcess,
+from findontime.insaflu_uploads import (InsafluFileProcess,
                                         PreMainWithMetadata,
                                         TelevirFileProcess)
 from findontime.upload_utils import (InsafluUploadRemote, UploadAll,
@@ -32,7 +32,7 @@ def get_arguments():
                         type=int)
 
     parser.add_argument("-n", "--tag", help="name tag, if given, will be added to the output file names",
-                        required=False, type=str, default="")
+                        required=False, type=str, default="some_tag")
 
     parser.add_argument("--config", help="config file",
                         required=False, type=str, default="config.ini")

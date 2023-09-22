@@ -10,6 +10,7 @@ from fastq_handler.fastq_handler import DirectoryProcessingSimple, PreMain
 from fastq_handler.records import Processed
 
 from findontime.configs import InfluConfig, default_log_handler
+
 from findontime.plot_utils import plot_project_results
 from findontime.records import InsafluFile, MetadataEntry
 from findontime.upload_utils import InsafluSampleCodes, InsafluUpload
@@ -35,6 +36,7 @@ class InfluProcessed(Processed):
             fastq_file, fastq_dir, merged_file)
 
         return new_entry.export_as_dataframe()
+    
 
     def generate_metadata_entry(self, fastq_file: str, fastq_dir: str, merged_file: str, tag=""):
 
@@ -535,8 +537,9 @@ class TelevirFileProcess(InsafluSetup):
 
         fastq_list = self.uploader.logger.generate_fastq_list_status(
             InsafluSampleCodes.STATUS_SUBMITTED)
-
+        
         for fastq in fastq_list:
+            
             project_name = self.assign_project_name(fastq)
 
             file_name, _ = self.processed.get_run_info(fastq.file_path)
