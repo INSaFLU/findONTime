@@ -308,6 +308,9 @@ class InsafluUpload(ABC):
         """
         check submission success"""
 
+        if "Error" in submission_output:
+            return False
+
         if "exists in database" in submission_output:
             return True
 
