@@ -1,4 +1,3 @@
-
 import argparse
 import os
 import signal
@@ -7,62 +6,91 @@ import time
 from dataclasses import dataclass
 from typing import Protocol, Tuple
 
-from fastq_handler.actions import (ProcessActionDownsize,
-                                   ProcessActionMergeWithLast)
+from fastq_handler.actions import ProcessActionDownsize, ProcessActionMergeWithLast
 
 from findontime.configs import InfluConfig, RunConfigMeta
 from findontime.connectors import ConnectorDocker, ConnectorParamiko
-from findontime.drones import (InsafluFileProcessThread, LockWithOwner,
-                               TelevirFileProcessThread, signal_handler)
-from findontime.insaflu_uploads import (InsafluFileProcess,
-                                        PreMainWithMetadata,
-                                        TelevirFileProcess)
-from findontime.upload_utils import (InsafluUploadRemote, UploadAll,
-                                     UploadLast, UploadNone)
+from findontime.drones import (
+    InsafluFileProcessThread,
+    LockWithOwner,
+    TelevirFileProcessThread,
+    signal_handler,
+)
+from findontime.insaflu_uploads import (
+    InsafluFileProcess,
+    PreMainWithMetadata,
+    TelevirFileProcess,
+)
+from findontime.upload_utils import (
+    InsafluUploadRemote,
+    UploadAll,
+    UploadLast,
+    UploadNone,
+)
 
 
 def get_arguments():
-
     parser = argparse.ArgumentParser(description="Process fastq files.")
+    parser.add_argument("-i", "--in_dir", help="Input directory", required=True)
+    parser.add_argument("-o", "--out_dir", help="Output directory", required=True)
     parser.add_argument(
-        "-i", "--in_dir", help="Input directory", required=True)
-    parser.add_argument("-o", "--out_dir",
-                        help="Output directory", required=True)
-    parser.add_argument("-s", "--sleep", help="Sleep time between checks in monitor mode", default=600,
-                        type=int)
-
-    parser.add_argument("-n", "--tag", help="name tag, if given, will be added to the output file names",
-                        required=False, type=str, default="some_tag")
-
-    parser.add_argument("--config", help="config file",
-                        required=False, type=str, default="config.ini")
+        "-s",
+        "--sleep",
+        help="Sleep time between checks in monitor mode",
+        default=600,
+        type=int,
+    )
 
     parser.add_argument(
-        "--max_size", help="max size of the output file, in kilobytes", type=int, default=400000)
+        "-n",
+        "--tag",
+        help="name tag, if given, will be added to the output file names",
+        required=False,
+        type=str,
+        default="some_tag",
+    )
+
+    parser.add_argument(
+        "--config", help="config file", required=False, type=str, default="config.ini"
+    )
+
+    parser.add_argument(
+        "--max_size",
+        help="max size of the output file, in kilobytes",
+        type=int,
+        default=400000,
+    )
 
     parser.add_argument("--merge", help="merge files", action="store_true")
 
-    parser.add_argument(
-        "--downsize", help="downsize fastq files", action="store_true")
-
-    parser.add_argument('--upload',
-                        default='last',
-                        choices=['last', 'all', 'none'],
-                        help='file upload stategy (default: last)',)
-
-    parser.add_argument('--connect',
-                        default='docker',
-                        choices=['docker', 'ssh'],
-                        help='file upload stategy (default: docker)',)
+    parser.add_argument("--downsize", help="downsize fastq files", action="store_true")
 
     parser.add_argument(
-        "--keep_names", help="keep original file names", action="store_true")
+        "--upload",
+        default="last",
+        choices=["last", "all", "none"],
+        help="file upload stategy (default: last)",
+    )
 
     parser.add_argument(
-        "--monitor", help="monitor directory until killed", action="store_true")
+        "--connect",
+        default="docker",
+        choices=["docker", "ssh"],
+        help="file upload stategy (default: docker)",
+    )
 
     parser.add_argument(
-        "--televir", help="deploy televir pathogen identification on each sample", action="store_true"
+        "--keep_names", help="keep original file names", action="store_true"
+    )
+
+    parser.add_argument(
+        "--monitor", help="monitor directory until killed", action="store_true"
+    )
+
+    parser.add_argument(
+        "--televir",
+        help="deploy televir pathogen identification on each sample",
+        action="store_true",
     )
 
     return ArgsClass(**parser.parse_args().__dict__)
@@ -70,7 +98,6 @@ def get_arguments():
 
 @dataclass
 class ArgsClass:
-
     in_dir: str
     out_dir: str
     sleep: int
@@ -93,13 +120,11 @@ class ArgsClass:
 
 
 class MainInsaflu:
-
     def __init__(self):
         pass
 
     def select_manager(self, args: ArgsClass):
-
-        if args.upload == 'none':
+        if args.upload == "none":
             print("No upload specified, using fastq handler")
             return FastqHandlerManager(args)
         else:
@@ -107,12 +132,23 @@ class MainInsaflu:
 
     def run(self):
         args = get_arguments()
+
+        if args.merge is True and args.upload == "all":
+            ### inform user of behaviour and ask if to continue
+            print(
+                "Merge and upload all will result in successive files being merged and uploaded, is this what you want?"
+            )
+            print("If not, please use --upload last or --upload none")
+            print("If you want to continue, please press enter")
+            user_input = input()
+            if user_input != "":
+                sys.exit(0)
+
         manager = self.select_manager(args)
         manager.run()
 
 
 class Deployer(Protocol):
-
     def __init__(self, args: ArgsClass) -> None:
         ...
 
@@ -121,12 +157,10 @@ class Deployer(Protocol):
 
 
 class FastqHandlerManager:
-
     def __init__(self, args: ArgsClass):
         self.args = args
 
     def setup_config(self, args: ArgsClass):
-
         actions = []
 
         if args.merge:
@@ -153,31 +187,25 @@ class FastqHandlerManager:
         return run_metadata
 
     def setup_compressor(self, run_metadata: RunConfigMeta):
-
         compressor = PreMainWithMetadata(run_metadata)
 
         return compressor
 
     def run(self):
-
         compressor = self.setup_compressor(self.setup_config(self.args))
 
         if self.args.monitor:
-
             compressor.run_until_killed()
 
         else:
-
             compressor.run()
 
 
 class InsafluManager:
-
     def __init__(self, args: ArgsClass):
         self.args = args
 
     def setup_config(self, args: ArgsClass, test=False):
-
         # check input dir exists
         if not os.path.isdir(args.in_dir):
             print("Input directory does not exist")
@@ -189,7 +217,7 @@ class InsafluManager:
             sys.exit(1)
 
         # create connector
-        if args.connect == 'docker':
+        if args.connect == "docker":
             connector = ConnectorDocker(args.config)
             if test:
                 connector.set_interactive(False)
@@ -200,9 +228,9 @@ class InsafluManager:
         insaflu_upload = InsafluUploadRemote(connector, args.config)
 
         # determine upload strategy
-        if args.upload == 'last':
+        if args.upload == "last":
             upload_strategy = UploadLast
-        elif args.upload == 'none':
+        elif args.upload == "none":
             upload_strategy = UploadNone
         else:
             upload_strategy = UploadAll
@@ -237,8 +265,9 @@ class InsafluManager:
 
         return run_metadata
 
-    def generate_runners(self, run_metadata: InfluConfig) -> Tuple[InsafluFileProcess, TelevirFileProcess]:
-
+    def generate_runners(
+        self, run_metadata: InfluConfig
+    ) -> Tuple[InsafluFileProcess, TelevirFileProcess]:
         influ_compressor = InsafluFileProcess(
             run_metadata,
         )
@@ -249,25 +278,26 @@ class InsafluManager:
 
         return influ_compressor, televir_processor
 
-    def generate_threads(self, file_processor: InsafluFileProcess, televir_processor: TelevirFileProcess) -> Tuple[InsafluFileProcessThread, TelevirFileProcessThread]:
-
+    def generate_threads(
+        self, file_processor: InsafluFileProcess, televir_processor: TelevirFileProcess
+    ) -> Tuple[InsafluFileProcessThread, TelevirFileProcessThread]:
         lock = LockWithOwner()
-        lock.owner = 'A'
+        lock.owner = "A"
 
-        file_processor_task = InsafluFileProcessThread(
-            file_processor, lock
-        )
-        televir_processor_task = TelevirFileProcessThread(
-            televir_processor, lock
-        )
+        file_processor_task = InsafluFileProcessThread(file_processor, lock)
+        televir_processor_task = TelevirFileProcessThread(televir_processor, lock)
 
         file_processor_task.daemon = True
         televir_processor_task.daemon = True
 
         return file_processor_task, televir_processor_task
 
-    def monitor_tasks(self, file_processor_task: InsafluFileProcessThread, televir_processor_task: TelevirFileProcessThread, args: ArgsClass):
-
+    def monitor_tasks(
+        self,
+        file_processor_task: InsafluFileProcessThread,
+        televir_processor_task: TelevirFileProcessThread,
+        args: ArgsClass,
+    ):
         if not args.monitor:
             if file_processor_task.counter > 0 and televir_processor_task.counter > 0:
                 return False
@@ -281,29 +311,28 @@ class InsafluManager:
         return True
 
     def run(self):
-
         args = self.args
 
         run_metadata = self.setup_config(args)
 
-        influ_compressor, televir_processor = self.generate_runners(
-            run_metadata)
+        influ_compressor, televir_processor = self.generate_runners(run_metadata)
 
         file_processor_task, televir_processor_task = self.generate_threads(
-            influ_compressor, televir_processor)
+            influ_compressor, televir_processor
+        )
 
         signal.signal(signal.SIGINT, signal_handler)
 
         loop = True
 
         try:
-
             file_processor_task.start()
             televir_processor_task.start()
 
             while loop:
                 new_loop = self.monitor_tasks(
-                    file_processor_task, televir_processor_task, args)
+                    file_processor_task, televir_processor_task, args
+                )
                 loop = new_loop
 
                 time.sleep(2)
@@ -315,7 +344,6 @@ class InsafluManager:
             print(e)
 
         finally:
-
             print("Stopping tasks...")
 
             file_processor_task.stop()
