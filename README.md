@@ -16,7 +16,7 @@ This allows users to **detect a virus in a sample as early as possible during th
 
 ## Details
 
-- It **runs concurrently with MinION sequencing** and **merges (at user defined time intervals) the FASTQ files** that are being generated in real-time for each sample. For this, it relies on [fastq-handler](https://pypi.org/project/fastq-handler/), a package to process ONT fastq files by concatenating reads as they are generated during a sequencing run.
+- It **runs concurrently with MinION sequencing** and **merges (at user defined time intervals) the demultiplexed FASTQ files** that are being generated in real-time for each sample (NOTE: the sequencing run should have the barcoding option ON). For this, it relies on [fastq-handler](https://pypi.org/project/fastq-handler/), a package to process ONT fastq files by concatenating reads as they are generated during a sequencing run.
 
 - It can also automatically **upload the files to the INSaFLU-TELEVIR platform** (docker installation or local server) and launch the **metagenomics virus detection** analysis using the TELEVIR module.
 
